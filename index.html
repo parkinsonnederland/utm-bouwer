@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UTM Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rose: #e20cff;
+      --rose-light: #fdf0ff;
+      --rose-dark: #a800be;
+      --bg: #f4f5f7;
+      --white: #ffffff;
+      --border: #e2e5ea;
+      --text: #1a1d23;
+      --muted: #6b7280;
+      --muted2: #9ca3af;
+      --green: #16a34a;
+      --green-bg: #f0fdf4;
+      --sans: 'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      font-size: 14px;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: var(--rose);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .brand-icon svg { width: 17px; height: 17px; }
+
+    .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-name span { color: var(--rose); }
+
+    .topbar-meta { font-size: 12px; color: var(--muted2); }
+
+    /* App */
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* Intro */
+    .intro {
+      margin-bottom: 32px;
+    }
+
+    .intro h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .intro p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Step */
+    .step {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    /* Connector line between steps */
+    .step:not(:last-of-type) .step-left::after {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 48px;
+      bottom: -12px;
+      width: 2px;
+      background: var(--border);
+      z-index: 0;
+    }
+
+    .step.active .step-left::after { background: var(--rose); opacity: .3; }
+    .step.done .step-left::after { background: var(--rose); opacity: .5; }
+
+    .step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted2);
+      transition: border-color .2s, background .2s, color .2s;
+      flex-shrink: 0;
+    }
+
+    .step.active .step-num {
+      border-color: var(--rose);
+      background: var(--rose);
+      color: #fff;
+    }
+
+    .step.done .step-num {
+      border-color: var(--rose);
+      background: var(--rose-light);
+      color: var(--rose);
+    }
+
+    .step.done .step-num::after { content: '✓'; }
+
+    .step-right { flex: 1; min-width: 0; }
+
+    /* Step card */
+    .step-card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: border-color .2s;
+      margin-bottom: 0;
+    }
+
+    .step.active .step-card { border-color: var(--rose); }
+    .step.done .step-card { border-color: var(--border); opacity: .85; }
+
+    .step-card-header {
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .step-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .step-card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .step-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .badge-required { background: #fff0f0; color: #dc2626; }
+    .badge-optional { background: var(--bg); color: var(--muted2); }
+    .badge-done { background: var(--green-bg); color: var(--green); }
+
+    .step-card-body {
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Collapsed state */
+    .step.done .step-card-body { display: none; }
+
+    /* Fields */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    label code {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--rose-dark);
+      background: var(--rose-light);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--muted2);
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--rose);
+      box-shadow: 0 0 0 3px rgba(226,12,255,.1);
+    }
+
+    input[type="text"]::placeholder { color: var(--muted2); }
+
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .section-label { font-size: 11px; font-weight: 600; color: var(--muted2); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 12px; }
+
+    /* Presets */
+    .preset-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+    .preset-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preset-btn:hover { border-color: var(--rose); background: var(--rose-light); }
+
+    .preset-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--rose);
+      flex-shrink: 0;
+      opacity: .4;
+    }
+
+    .preset-btn:hover .preset-dot { opacity: 1; }
+
+    .preset-name { font-size: 12px; font-weight: 600; color: var(--text); display: block; }
+    .preset-vals { font-size: 11px; color: var(--muted2); }
+
+    /* Next button */
+    .next-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: var(--rose);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+
+    .next-btn:hover { background: var(--rose-dark); }
+    .next-btn:active { transform: scale(.98); }
+
+    .next-btn svg { width: 14px; height: 14px; }
+
+    .edit-btn {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+
+    .edit-btn:hover { border-color: var(--rose); color: var(--rose); }
+
+    /* Done summary inside collapsed step */
+    .done-summary {
+      display: none;
+      padding: 10px 18px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .done-summary strong { color: var(--text); font-weight: 600; }
+
+    .step.done .done-summary { display: block; }
+
+    /* Output card (step 4) */
+    .output-block {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 13px 110px 13px 13px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.75;
+      word-break: break-all;
+      min-height: 64px;
+      position: relative;
+    }
+
+    .o-base { color: var(--text); }
+    .o-sep { color: var(--muted2); }
+    .o-key { color: var(--rose-dark); font-weight: 700; }
+    .o-val { color: var(--rose); }
+    .o-empty { color: var(--muted2); font-style: italic; font-family: var(--sans); font-size: 13px; }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: var(--rose);
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .copy-btn:hover { background: var(--rose-dark); }
+    .copy-btn.copied { background: var(--green); }
+
+    .output-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    .status-ok { color: var(--green); font-weight: 500; }
+    .status-warn { color: #d97706; font-weight: 500; }
+
+    /* Params table */
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    table tr { border-bottom: 1px solid var(--border); }
+    table tr:last-child { border-bottom: none; }
+    table td { padding: 8px 0; font-size: 12px; vertical-align: middle; }
+    table td:first-child { font-family: 'Courier New', monospace; color: var(--rose-dark); font-weight: 700; width: 42%; font-size: 11.5px; }
+    table td.empty { color: var(--muted2); font-style: italic; }
+
+    /* Save + history row */
+    .save-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 7px;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: background .15s, transform .1s;
+    }
+
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--rose); color: #fff; }
+    .btn-primary:hover { background: var(--rose-dark); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--bg);
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .hi-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose); flex-shrink: 0; opacity: .4; }
+    .hi-info { flex: 1; min-width: 0; }
+    .hi-campaign { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hi-meta { font-size: 11px; color: var(--muted2); margin-top: 1px; }
+    .hi-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+    .sm-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 9px;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+
+    .sm-btn:hover { border-color: var(--rose); color: var(--rose); }
+    .sm-btn.del:hover { border-color: #ef4444; color: #ef4444; }
+
+    .no-history { text-align: center; padding: 20px 0; font-size: 12px; color: var(--muted2); }
+
+    /* New link */
+    .restart-row {
+      text-align: center;
+      margin-top: 28px;
+    }
+
+    .restart-link {
+      font-size: 13px;
+      color: var(--rose);
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      background: none;
+      border: none;
+      font-family: var(--sans);
+    }
+
+    .restart-link:hover { text-decoration: underline; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--text);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 17 17" fill="none">
+        <path d="M2 8.5h13M8.5 2l6.5 6.5-6.5 6.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">UTM <span>Builder</span></span>
+  </div>
+  <span class="topbar-meta">Campagne URL generator</span>
+</div>
+
+<div class="app">
+
+  <div class="intro">
+    <h2>Maak een campagne-URL in 4 stappen</h2>
+    <p>Vul de stappen hieronder in. Aan het einde krijg je een kant-en-klare link die je kunt gebruiken in je advertenties, e-mails of social posts.</p>
+  </div>
+
+  <!-- STAP 1 -->
+  <div class="step active" id="step1">
+    <div class="step-left">
+      <div class="step-num">1</div>
+    </div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-card-title">Naar welke pagina wil je mensen sturen?</div>
+            <div class="step-card-sub">Voer de volledige URL in van de landingspagina</div>
+          </div>
+          <span class="step-badge badge-required" id="badge1">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+          <div class="field">
+            <label>Website-adres (URL)</label>
+            <input type="text" id="baseUrl" placeholder="https://www.jouwwebsite.nl/pagina" />
+            <div class="field-hint">Kopieer de URL uit je browser. Zorg dat het begint met https://</div>
+          </div>
+          <button class="next-btn" onclick="goToStep2()">
+            Volgende stap
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 2 -->
+  <div class="step" id="step2">
+    <div class="step-left">
+      <div class="step-num">2</div>
+    </div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-card-title">Waar komt deze link vandaan?</div>
+            <div class="step-card-sub">Kies een preset of vul zelf in</div>
+          </div>
+          <span class="step-badge badge-required" id="badge2">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+          <div class="section-label">Kies een kanaal (optioneel)</div>
+          <div class="preset-grid" id="presetGrid"></div>
+
+          <hr class="section-sep" />
+
+          <div class="field">
+            <label>Bron <code>utm_source</code></label>
+            <input type="text" id="utmSource" placeholder="google, facebook, nieuwsbrief…" />
+            <div class="field-hint">Waar staat de link? Bijv. Google, Facebook, je nieuwsbrief.</div>
+          </div>
+          <div class="field">
+            <label>Type marketing <code>utm_medium</code></label>
+            <input type="text" id="utmMedium" placeholder="cpc, email, social…" />
+            <div class="field-hint">Wat voor soort campagne? Bijv. betaalde advertentie (cpc), e-mail, of social media.</div>
+          </div>
+          <button class="next-btn" onclick="goToStep3()">
+            Volgende stap
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 3 -->
+  <div class="step" id="step3">
+    <div class="step-left">
+      <div class="step-num">3</div>
+    </div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-card-title">Hoe heet je campagne?</div>
+            <div class="step-card-sub">Geef je campagne een herkenbare naam</div>
+          </div>
+          <span class="step-badge badge-required" id="badge3">Verplicht</span>
+        </div>
+        <div class="step-card-body">
+          <div class="field">
+            <label>Campagnenaam <code>utm_campaign</code></label>
+            <input type="text" id="utmCampaign" placeholder="zomercampagne-2025, black-friday…" />
+            <div class="field-hint">Gebruik kleine letters en koppeltekens, geen spaties. Bijv. <strong>zomercampagne-2025</strong></div>
+          </div>
+
+          <hr class="section-sep" />
+          <div class="section-label">Extra (optioneel)</div>
+
+          <div class="field">
+            <label>Zoekwoord of doelgroep <code>utm_term</code></label>
+            <input type="text" id="utmTerm" placeholder="haartransplantatie-kosten, mannen-30…" />
+            <div class="field-hint">Alleen invullen bij zoekadvertenties of gerichte doelgroepen.</div>
+          </div>
+          <div class="field">
+            <label>Welke advertentie of knop <code>utm_content</code></label>
+            <input type="text" id="utmContent" placeholder="banner-blauw, knop-header…" />
+            <div class="field-hint">Handig als je meerdere versies van dezelfde advertentie hebt.</div>
+          </div>
+
+          <button class="next-btn" onclick="goToStep4()">
+            Genereer mijn URL
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <div class="done-summary" id="done3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAP 4: Resultaat -->
+  <div class="step" id="step4">
+    <div class="step-left">
+      <div class="step-num">4</div>
+    </div>
+    <div class="step-right">
+      <div class="step-card">
+        <div class="step-card-header">
+          <div>
+            <div class="step-card-title">Jouw campagne-URL is klaar!</div>
+            <div class="step-card-sub">Kopieer de link en gebruik hem in je campagne</div>
+          </div>
+          <span class="step-badge badge-done" id="badge4" style="display:none;">✓ Klaar</span>
+        </div>
+        <div class="step-card-body">
+          <div style="position:relative;">
+            <div class="output-block" id="outputUrl"><span class="o-empty">Vul de stappen hierboven in…</span></div>
+            <button class="copy-btn" id="copyBtn" onclick="copyUrl()">Kopiëren</button>
+          </div>
+          <div class="output-meta">
+            <span id="urlStatus">–</span>
+            <span id="urlLen"></span>
+          </div>
+
+          <table><tbody id="paramsBody"></tbody></table>
+
+          <div class="save-row">
+            <button class="btn btn-primary" onclick="addToHistory()">Opslaan in lijst</button>
+            <button class="btn btn-ghost" style="font-size:12px;" onclick="exportCSV()">↓ CSV exporteren</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="step-card" style="margin-top:16px;" id="historyCard">
+        <div class="step-card-header">
+          <div class="step-card-title">Opgeslagen URLs</div>
+          <span id="historyCount" style="font-size:11px;color:var(--muted2);"></span>
+        </div>
+        <div class="step-card-body">
+          <div class="history-list" id="historyList">
+            <div class="no-history">Nog geen URLs opgeslagen.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="restart-row">
+        <button class="restart-link" onclick="restartFlow()">+ Nieuwe URL aanmaken</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const PARAMS = ['utmSource','utmMedium','utmCampaign','utmTerm','utmContent'];
+  const PARAM_KEYS = { utmSource:'utm_source', utmMedium:'utm_medium', utmCampaign:'utm_campaign', utmTerm:'utm_term', utmContent:'utm_content' };
+
+  const PRESETS = [
+    { name:'Google Ads',         vals:{ utmSource:'google',     utmMedium:'cpc' } },
+    { name:'Meta Ads',           vals:{ utmSource:'facebook',   utmMedium:'paid-social' } },
+    { name:'LinkedIn Ads',       vals:{ utmSource:'linkedin',   utmMedium:'paid-social' } },
+    { name:'E-mail nieuwsbrief', vals:{ utmSource:'newsletter', utmMedium:'email' } },
+    { name:'Organisch social',   vals:{ utmSource:'instagram',  utmMedium:'social' } },
+    { name:'Affiliate',          vals:{ utmSource:'partner',    utmMedium:'affiliate' } },
+  ];
+
+  let history = JSON.parse(localStorage.getItem('utm_history') || '[]');
+  let currentStep = 1;
+
+  // Build presets
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    btn.innerHTML = `<div class="preset-dot"></div><div><span class="preset-name">${p.name}</span><span class="preset-vals">${p.vals.utmSource} · ${p.vals.utmMedium}</span></div>`;
+    btn.onclick = () => {
+      Object.entries(p.vals).forEach(([k,v]) => { document.getElementById(k).value = v; });
+      showToast(`"${p.name}" ingevuld`);
+    };
+    document.getElementById('presetGrid').appendChild(btn);
+  });
+
+  function getValues() {
+    return {
+      baseUrl: document.getElementById('baseUrl').value.trim(),
+      utmSource: document.getElementById('utmSource').value.trim(),
+      utmMedium: document.getElementById('utmMedium').value.trim(),
+      utmCampaign: document.getElementById('utmCampaign').value.trim(),
+      utmTerm: document.getElementById('utmTerm').value.trim(),
+      utmContent: document.getElementById('utmContent').value.trim(),
+    };
+  }
+
+  function buildUrl(vals) {
+    if (!vals.baseUrl) return '';
+    const params = PARAMS.filter(k => vals[k]).map(k => `${PARAM_KEYS[k]}=${encodeURIComponent(vals[k])}`);
+    if (!params.length) return vals.baseUrl;
+    return vals.baseUrl + (vals.baseUrl.includes('?') ? '&' : '?') + params.join('&');
+  }
+
+  function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function setStep(n) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('step' + i);
+      el.classList.remove('active', 'done');
+      if (i < n) el.classList.add('done');
+      if (i === n) el.classList.add('active');
+    }
+    // Update step-num display for done steps (show checkmark via CSS)
+    currentStep = n;
+  }
+
+  function goToStep2() {
+    const url = document.getElementById('baseUrl').value.trim();
+    if (!url) { showToast('Vul eerst een URL in'); document.getElementById('baseUrl').focus(); return; }
+    if (!url.startsWith('http')) { showToast('De URL moet beginnen met https://'); document.getElementById('baseUrl').focus(); return; }
+    document.getElementById('done1').innerHTML = `<strong>Pagina:</strong> ${esc(url)}`;
+    document.getElementById('badge1').className = 'step-badge badge-done';
+    document.getElementById('badge1').textContent = '✓ Klaar';
+    setStep(2);
+    scrollToStep('step2');
+  }
+
+  function goToStep3() {
+    const src = document.getElementById('utmSource').value.trim();
+    const med = document.getElementById('utmMedium').value.trim();
+    if (!src || !med) { showToast('Vul bron én type marketing in'); return; }
+    document.getElementById('done2').innerHTML = `<strong>Bron:</strong> ${esc(src)} &nbsp;·&nbsp; <strong>Type:</strong> ${esc(med)}`;
+    document.getElementById('badge2').className = 'step-badge badge-done';
+    document.getElementById('badge2').textContent = '✓ Klaar';
+    setStep(3);
+    scrollToStep('step3');
+  }
+
+  function goToStep4() {
+    const camp = document.getElementById('utmCampaign').value.trim();
+    if (!camp) { showToast('Vul een campagnenaam in'); document.getElementById('utmCampaign').focus(); return; }
+    const term = document.getElementById('utmTerm').value.trim();
+    const content = document.getElementById('utmContent').value.trim();
+    let summary = `<strong>Campagne:</strong> ${esc(camp)}`;
+    if (term) summary += ` &nbsp;·&nbsp; <strong>Term:</strong> ${esc(term)}`;
+    if (content) summary += ` &nbsp;·&nbsp; <strong>Content:</strong> ${esc(content)}`;
+    document.getElementById('done3').innerHTML = summary;
+    document.getElementById('badge3').className = 'step-badge badge-done';
+    document.getElementById('badge3').textContent = '✓ Klaar';
+    document.getElementById('badge4').style.display = '';
+    setStep(4);
+    updateOutput();
+    scrollToStep('step4');
+  }
+
+  function scrollToStep(id) {
+    setTimeout(() => {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  }
+
+  function updateOutput() {
+    const vals = getValues();
+    const url = buildUrl(vals);
+    const out = document.getElementById('outputUrl');
+
+    if (!url) {
+      out.innerHTML = '<span class="o-empty">Vul de stappen hierboven in…</span>';
+      document.getElementById('urlStatus').textContent = '–';
+      document.getElementById('urlStatus').className = '';
+      document.getElementById('urlLen').textContent = '';
+    } else {
+      const sep = vals.baseUrl.includes('?') ? '&' : '?';
+      const paramHtml = PARAMS.filter(k => vals[k])
+        .map(k => `<span class="o-key">${PARAM_KEYS[k]}</span><span class="o-sep">=</span><span class="o-val">${encodeURIComponent(vals[k])}</span>`)
+        .join('<span class="o-sep">&amp;</span>');
+      out.innerHTML = `<span class="o-base">${esc(vals.baseUrl)}</span>` + (paramHtml ? `<span class="o-sep">${sep}</span>${paramHtml}` : '');
+      document.getElementById('urlLen').textContent = url.length + ' tekens';
+      const missing = ['utmSource','utmMedium','utmCampaign'].filter(k => !vals[k]);
+      const st = document.getElementById('urlStatus');
+      st.textContent = missing.length ? `Ontbreekt: ${missing.map(k=>PARAM_KEYS[k]).join(', ')}` : '✓ Geldige UTM URL';
+      st.className = missing.length ? 'status-warn' : 'status-ok';
+    }
+
+    // Params table
+    const tbody = document.getElementById('paramsBody');
+    tbody.innerHTML = '';
+    PARAMS.forEach(k => {
+      const val = vals[k];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${PARAM_KEYS[k]}</td><td class="${val?'':'empty'}">${val ? esc(val) : '–'}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function copyUrl() {
+    const url = buildUrl(getValues());
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Gekopieerd!';
+      btn.classList.add('copied');
+      showToast('URL gekopieerd naar klembord');
+      setTimeout(() => { btn.textContent = 'Kopiëren'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  function addToHistory() {
+    const vals = getValues();
+    if (!vals.baseUrl) return;
+    history.unshift({ url: buildUrl(vals), vals, ts: Date.now() });
+    if (history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem('utm_history', JSON.stringify(history));
+    renderHistory();
+    showToast('Opgeslagen!');
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('historyList');
+    const countEl = document.getElementById('historyCount');
+    countEl.textContent = history.length ? `${history.length} item${history.length !== 1 ? 's' : ''}` : '';
+    if (!history.length) { el.innerHTML = '<div class="no-history">Nog geen URLs opgeslagen.</div>'; return; }
+    el.innerHTML = '';
+    history.forEach((item, i) => {
+      const d = new Date(item.ts);
+      const date = d.toLocaleDateString('nl-NL',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'});
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = `
+        <div class="hi-dot"></div>
+        <div class="hi-info">
+          <div class="hi-campaign">${item.vals.utmCampaign || '(geen campagne)'}</div>
+          <div class="hi-meta">${item.vals.utmSource||'?'} · ${item.vals.utmMedium||'?'} · ${date}</div>
+        </div>
+        <div class="hi-actions">
+          <button class="sm-btn" onclick="loadHistory(${i})">Laden</button>
+          <button class="sm-btn" onclick="copyHistoryUrl(${i})">Kopiëren</button>
+          <button class="sm-btn del" onclick="deleteHistory(${i})">✕</button>
+        </div>
+      `;
+      el.appendChild(div);
+    });
+  }
+
+  function loadHistory(i) {
+    const item = history[i];
+    document.getElementById('baseUrl').value = item.vals.baseUrl || '';
+    PARAMS.forEach(k => { document.getElementById(k).value = item.vals[k] || ''; });
+    // Re-run all steps
+    restartFlow();
+    setTimeout(() => {
+      document.getElementById('baseUrl').value = item.vals.baseUrl || '';
+      PARAMS.forEach(k => { document.getElementById(k).value = item.vals[k] || ''; });
+      goToStep2(); goToStep3(); goToStep4();
+    }, 50);
+  }
+
+  function copyHistoryUrl(i) {
+    navigator.clipboard.writeText(history[i].url).then(() => showToast('URL gekopieerd'));
+  }
+
+  function deleteHistory(i) {
+    history.splice(i, 1);
+    localStorage.setItem('utm_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  function exportCSV() {
+    if (!history.length) { showToast('Geen opgeslagen URLs'); return; }
+    const headers = ['Datum','URL','utm_source','utm_medium','utm_campaign','utm_term','utm_content'];
+    const rows = history.map(item =>
+      [new Date(item.ts).toLocaleString('nl-NL'), item.url, item.vals.utmSource, item.vals.utmMedium, item.vals.utmCampaign, item.vals.utmTerm, item.vals.utmContent]
+        .map(v => `"${(v||'').replace(/"/g,'""')}"`)
+        .join(',')
+    );
+    const blob = new Blob([[headers.join(','), ...rows].join('\n')], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `utm-export-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    showToast('CSV geëxporteerd');
+  }
+
+  function restartFlow() {
+    ['baseUrl',...PARAMS].forEach(k => { const el = document.getElementById(k); if(el) el.value = ''; });
+    ['badge1','badge2','badge3'].forEach((id,i) => {
+      const el = document.getElementById(id);
+      el.className = 'step-badge badge-required';
+      el.textContent = 'Verplicht';
+    });
+    document.getElementById('badge4').style.display = 'none';
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // Init
+  setStep(1);
+  renderHistory();
+</script>
+</body>
+</html>
