@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -87,6 +88,143 @@
       line-height: 1.6;
     }
 
+    /* Accordion */
+.accordion {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  gap: 12px;
+}
+
+.accordion-trigger:hover { background: var(--bg); }
+
+.accordion-trigger-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.accordion-icon {
+  width: 28px; height: 28px;
+  background: var(--rose-light);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.accordion-icon svg { width: 14px; height: 14px; }
+
+.accordion-chevron {
+  flex-shrink: 0;
+  color: var(--muted2);
+  transition: transform .25s;
+}
+
+.accordion.open .accordion-chevron { transform: rotate(180deg); }
+
+.accordion-body {
+  display: none;
+  border-top: 1px solid var(--border);
+  padding: 24px 20px;
+}
+
+.accordion.open .accordion-body { display: block; }
+
+.acc-intro {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.acc-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.acc-block {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.acc-block-icon { font-size: 18px; line-height: 1; flex-shrink: 0; margin-top: 1px; }
+.acc-block-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.acc-block-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.acc-block-text code {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--rose-dark);
+  background: var(--rose-light);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.acc-example {
+  margin-top: 20px;
+  background: var(--bg);
+  border-left: 3px solid var(--rose);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 16px;
+}
+
+.acc-example-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rose);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.acc-example-url {
+  font-family: 'Courier New', monospace;
+  font-size: 11.5px;
+  line-height: 1.7;
+  word-break: break-all;
+  color: var(--muted);
+}
+
+.acc-example-url .eu-base { color: var(--text); }
+.acc-example-url .eu-key { color: var(--rose-dark); font-weight: 700; }
+.acc-example-url .eu-val { color: var(--rose); }
+.acc-example-url .eu-sep { color: var(--muted2); }
+
+.acc-tip {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 12px 14px;
+  background: #fffbeb;
+  border-radius: 7px;
+  border: 1px solid #fde68a;
+}
+
+.acc-tip strong { color: #92400e; }
+    
     /* Step */
     .step {
       display: flex;
@@ -514,6 +652,71 @@
     <p>Vul de stappen hieronder in. Aan het einde krijg je een kant-en-klare link die je kunt gebruiken in je advertenties, e-mails of social posts.</p>
   </div>
 
+  <div class="accordion" id="utmAccordion">
+  <button class="accordion-trigger" onclick="toggleAccordion()">
+    <div class="accordion-trigger-left">
+      <div class="accordion-icon">
+        <svg viewBox="0 0 14 14" fill="none">
+          <circle cx="7" cy="7" r="6" stroke="#e20cff" stroke-width="1.5"/>
+          <path d="M7 6.5V10M7 4.5v.5" stroke="#e20cff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Wat is een UTM en waarom is het belangrijk?
+    </div>
+    <svg class="accordion-chevron" viewBox="0 0 14 14" fill="none" width="16" height="16">
+      <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="accordion-body">
+    <p class="acc-intro">
+      Stel: je plaatst dezelfde link naar een artikel op drie plekken — in een e-mail, op Instagram en via een Google-advertentie. In Google Analytics zie je dat er 200 bezoekers op die pagina zijn geweest. Maar je weet niet <em>waar ze vandaan kwamen</em>. Dat is precies het probleem dat UTM-codes oplossen.
+    </p>
+    <div class="acc-blocks">
+      <div class="acc-block">
+        <div class="acc-block-icon">🔗</div>
+        <div class="acc-block-content">
+          <div class="acc-block-title">Wat is een UTM?</div>
+          <div class="acc-block-text">
+            UTM staat voor <em>Urchin Tracking Module</em> — een stukje tekst dat je achter een URL plakt. Google Analytics leest die tekst uit en weet daardoor precies via welk kanaal, welke campagne en welke advertentie een bezoeker is binnengekomen. Je verandert niets aan je website; je voegt alleen informatie toe aan de link zelf.
+          </div>
+        </div>
+      </div>
+      <div class="acc-block">
+        <div class="acc-block-icon">🏷️</div>
+        <div class="acc-block-content">
+          <div class="acc-block-title">Wat voeg je toe aan een link?</div>
+          <div class="acc-block-text">
+            Je plakt maximaal vijf labels achter je URL:<br><br>
+            <code>utm_source</code> — Waar komt de bezoeker vandaan? (bijv. google, nieuwsbrief, instagram)<br>
+            <code>utm_medium</code> — Via welk type kanaal? (bijv. cpc, email, social)<br>
+            <code>utm_campaign</code> — Welke campagne? (bijv. stapril-2025)<br>
+            <code>utm_content</code> — Welke specifieke post of advertentie? (optioneel)<br>
+            <code>utm_term</code> — Op welk zoekwoord? (optioneel, voor betaalde zoekadvertenties)
+          </div>
+        </div>
+      </div>
+      <div class="acc-block">
+        <div class="acc-block-icon">📊</div>
+        <div class="acc-block-content">
+          <div class="acc-block-title">Waarom is het belangrijk?</div>
+          <div class="acc-block-text">
+            Zonder UTM-codes zie je in Analytics wel <em>hoeveel</em> mensen je website bezoeken, maar niet <em>waarom</em> sommige campagnes werken en andere niet. Met UTM's zie je precies welke e-mail, welke social post of welke advertentie daadwerkelijk leidt tot websitebezoek, aanmeldingen of donaties. Zo kun je je budget en energie steken in wat écht werkt.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="acc-example">
+      <div class="acc-example-label">Voorbeeld van een UTM-link</div>
+      <div class="acc-example-url">
+        <span class="eu-base">https://www.website.nl/artikel</span><span class="eu-sep">?</span><span class="eu-key">utm_source</span><span class="eu-sep">=</span><span class="eu-val">nieuwsbrief</span><span class="eu-sep">&amp;</span><span class="eu-key">utm_medium</span><span class="eu-sep">=</span><span class="eu-val">email</span><span class="eu-sep">&amp;</span><span class="eu-key">utm_campaign</span><span class="eu-sep">=</span><span class="eu-val">april-update</span>
+      </div>
+    </div>
+    <div class="acc-tip">
+      <strong>💡 Gouden regel:</strong> gebruik UTM-codes op élke link die je deelt buiten je eigen website — in advertenties, e-mails, social posts en nieuwsbrieven. Gebruik ze <em>niet</em> voor interne links op je eigen website, want dan vervuil je je eigen data.
+    </div>
+  </div>
+</div>
+
   <!-- STAP 1 -->
   <div class="step active" id="step1">
     <div class="step-left">
@@ -933,6 +1136,10 @@
   // Init
   setStep(1);
   renderHistory();
+  
+function toggleAccordion() {
+  document.getElementById('utmAccordion').classList.toggle('open');
+}
 </script>
 </body>
 </html>
