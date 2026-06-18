@@ -291,7 +291,6 @@
       background: var(--white);
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      overflow: hidden;
       transition: border-color .2s;
       margin-bottom: 0;
     }
@@ -390,7 +389,13 @@
     input[type="text"]::placeholder { color: var(--muted2); }
 
     /* Dropdowns */
-    select {
+    /* Hide native selects — replaced by custom dropdowns */
+    select { display: none; }
+
+    /* Custom dropdown */
+    .cd-wrap { position: relative; }
+
+    .cd-trigger {
       width: 100%;
       background: var(--white);
       border: 1px solid var(--border);
@@ -399,20 +404,72 @@
       color: var(--text);
       font-family: var(--sans);
       font-size: 13px;
-      outline: none;
+      text-align: left;
       cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'%3E%3Cpath d='M3 5l4 4 4-4' stroke='%239ca3af' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       transition: border-color .15s, box-shadow .15s;
+      user-select: none;
     }
 
-    select:focus {
+    .cd-trigger.placeholder { color: var(--muted2); }
+
+    .cd-trigger:focus, .cd-wrap.open .cd-trigger {
       border-color: var(--rose);
       box-shadow: 0 0 0 3px rgba(226,12,255,.1);
     }
+
+    .cd-chevron {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      color: var(--muted2);
+      transition: transform .2s;
+    }
+
+    .cd-wrap.open .cd-chevron { transform: rotate(180deg); }
+
+    .cd-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      z-index: 200;
+      overflow: hidden;
+    }
+
+    .cd-wrap.open .cd-menu { display: block; }
+
+    .cd-option {
+      padding: 9px 12px;
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .1s;
+    }
+
+    .cd-option:hover { background: var(--rose-light); color: var(--rose-dark); }
+    .cd-option.selected { background: var(--rose-light); color: var(--rose-dark); font-weight: 600; }
+    .cd-option.custom-opt { color: var(--muted); border-top: 1px solid var(--border); font-style: italic; }
+    .cd-option.custom-opt:hover { color: var(--rose-dark); }
+
+    .cd-check {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      color: var(--rose);
+      opacity: 0;
+    }
+
+    .cd-option.selected .cd-check { opacity: 1; }
 
     /* Custom override field */
     .custom-wrap { display: none; margin-top: 8px; }
@@ -809,18 +866,24 @@
 
           <div class="field">
             <label>Bron <code>utm_source</code></label>
-            <select id="utmSourceSelect" onchange="onSourceChange()">
-              <option value="" disabled selected>Kies een bron…</option>
-              <option value="google">google</option>
-              <option value="fb">fb</option>
-              <option value="ig">ig</option>
-              <option value="linkedin">linkedin</option>
-              <option value="mautic">mautic</option>
-              <option value="dpg">dpg</option>
-              <option value="partner">partner</option>
-              <option value="overig">overig</option>
-              <option value="__custom__">Anders, namelijk…</option>
-            </select>
+            <select id="utmSourceSelect"></select>
+            <div class="cd-wrap" id="cdSourceWrap">
+              <button type="button" class="cd-trigger placeholder" id="cdSourceTrigger" onclick="toggleDropdown('cdSourceWrap')">
+                <span id="cdSourceLabel">Kies een bron…</span>
+                <svg class="cd-chevron" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cd-menu" id="cdSourceMenu">
+                <div class="cd-option" onclick="selectOption('source','google')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>google</div>
+                <div class="cd-option" onclick="selectOption('source','fb')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>fb</div>
+                <div class="cd-option" onclick="selectOption('source','ig')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>ig</div>
+                <div class="cd-option" onclick="selectOption('source','linkedin')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>linkedin</div>
+                <div class="cd-option" onclick="selectOption('source','mautic')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>mautic</div>
+                <div class="cd-option" onclick="selectOption('source','dpg')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>dpg</div>
+                <div class="cd-option" onclick="selectOption('source','partner')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>partner</div>
+                <div class="cd-option" onclick="selectOption('source','overig')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>overig</div>
+                <div class="cd-option custom-opt" onclick="selectOption('source','__custom__')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Anders, namelijk…</div>
+              </div>
+            </div>
             <div class="custom-wrap" id="utmSourceCustomWrap">
               <input type="text" id="utmSourceCustom" placeholder="vul eigen bron in" oninput="syncDropdowns()" />
               <div class="custom-warn">⚠ Wijk alleen af in overleg. Afwijkende bronnen maken Salesforce-rapporten onbetrouwbaar.</div>
@@ -829,17 +892,23 @@
           </div>
           <div class="field">
             <label>Type marketing <code>utm_medium</code></label>
-            <select id="utmMediumSelect" onchange="onMediumChange()">
-              <option value="" disabled selected>Kies een type…</option>
-              <option value="cpc">cpc</option>
-              <option value="paid-social">paid-social</option>
-              <option value="paid">paid</option>
-              <option value="display">display</option>
-              <option value="email">email</option>
-              <option value="social">social</option>
-              <option value="referral">referral</option>
-              <option value="__custom__">Anders, namelijk…</option>
-            </select>
+            <select id="utmMediumSelect"></select>
+            <div class="cd-wrap" id="cdMediumWrap">
+              <button type="button" class="cd-trigger placeholder" id="cdMediumTrigger" onclick="toggleDropdown('cdMediumWrap')">
+                <span id="cdMediumLabel">Kies een type…</span>
+                <svg class="cd-chevron" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="cd-menu" id="cdMediumMenu">
+                <div class="cd-option" onclick="selectOption('medium','cpc')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>cpc</div>
+                <div class="cd-option" onclick="selectOption('medium','paid-social')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>paid-social</div>
+                <div class="cd-option" onclick="selectOption('medium','paid')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>paid</div>
+                <div class="cd-option" onclick="selectOption('medium','display')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>display</div>
+                <div class="cd-option" onclick="selectOption('medium','email')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>email</div>
+                <div class="cd-option" onclick="selectOption('medium','social')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>social</div>
+                <div class="cd-option" onclick="selectOption('medium','referral')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>referral</div>
+                <div class="cd-option custom-opt" onclick="selectOption('medium','__custom__')"><svg class="cd-check" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Anders, namelijk…</div>
+              </div>
+            </div>
             <div class="custom-wrap" id="utmMediumCustomWrap">
               <input type="text" id="utmMediumCustom" placeholder="vul eigen type in" oninput="syncDropdowns()" />
               <div class="custom-warn">⚠ Wijk alleen af in overleg. Afwijkende types maken Salesforce-rapporten onbetrouwbaar.</div>
@@ -980,60 +1049,116 @@
     btn.className = 'preset-btn';
     btn.innerHTML = `<div class="preset-dot"></div><div><span class="preset-name">${p.name}</span><span class="preset-vals">${p.vals.utmSource} · ${p.vals.utmMedium}</span></div>`;
     btn.onclick = () => {
-      setDropdown('utmSourceSelect', 'utmSourceCustomWrap', p.vals.utmSource);
-      setDropdown('utmMediumSelect', 'utmMediumCustomWrap', p.vals.utmMedium);
+      selectOption('source', p.vals.utmSource);
+      selectOption('medium', p.vals.utmMedium);
       showToast(`"${p.name}" ingevuld`);
     };
     document.getElementById('presetGrid').appendChild(btn);
   });
 
-  // Helpers for dropdown + custom field logic
-  function getDropdownValue(selectId, customId) {
-    const sel = document.getElementById(selectId);
-    if (sel.value === '__custom__') {
-      const raw = document.getElementById(customId).value.trim();
-      return raw.toLowerCase().replace(/\s+/g, '-');
+  // Custom dropdown state
+  const dropState = { source: '', medium: '' };
+
+  function toggleDropdown(wrapId) {
+    const wrap = document.getElementById(wrapId);
+    const isOpen = wrap.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.cd-wrap.open').forEach(w => w.classList.remove('open'));
+    if (!isOpen) wrap.classList.add('open');
+  }
+
+  // Close on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.cd-wrap')) {
+      document.querySelectorAll('.cd-wrap.open').forEach(w => w.classList.remove('open'));
     }
-    return sel.value || '';
+  });
+
+  function selectOption(type, value) {
+    const wrapId = type === 'source' ? 'cdSourceWrap' : 'cdMediumWrap';
+    const triggerId = type === 'source' ? 'cdSourceTrigger' : 'cdMediumTrigger';
+    const labelId = type === 'source' ? 'cdSourceLabel' : 'cdMediumLabel';
+    const menuId = type === 'source' ? 'cdSourceMenu' : 'cdMediumMenu';
+    const customWrapId = type === 'source' ? 'utmSourceCustomWrap' : 'utmMediumCustomWrap';
+
+    dropState[type] = value;
+
+    // Update trigger label
+    const trigger = document.getElementById(triggerId);
+    const label = document.getElementById(labelId);
+    if (value === '__custom__') {
+      label.textContent = 'Anders, namelijk…';
+      trigger.classList.add('placeholder');
+    } else {
+      label.textContent = value;
+      trigger.classList.remove('placeholder');
+    }
+
+    // Update selected state on options
+    document.querySelectorAll(`#${menuId} .cd-option`).forEach(opt => {
+      opt.classList.toggle('selected', opt.getAttribute('onclick').includes(`'${value}'`));
+    });
+
+    // Show/hide custom field
+    const customWrap = document.getElementById(customWrapId);
+    if (value === '__custom__') {
+      customWrap.classList.add('show');
+      const inputId = type === 'source' ? 'utmSourceCustom' : 'utmMediumCustom';
+      setTimeout(() => document.getElementById(inputId).focus(), 50);
+    } else {
+      customWrap.classList.remove('show');
+    }
+
+    // Close menu
+    document.getElementById(wrapId).classList.remove('open');
+
+    // Also sync the hidden native select for getValues compatibility
+    const selectId = type === 'source' ? 'utmSourceSelect' : 'utmMediumSelect';
+    document.getElementById(selectId).value = value;
   }
 
   function setDropdown(selectId, wrapId, value) {
-    const sel = document.getElementById(selectId);
-    const wrap = document.getElementById(wrapId);
-    const opt = Array.from(sel.options).find(o => o.value === value);
-    if (opt) {
-      sel.value = value;
-      wrap.classList.remove('show');
-    } else if (value) {
-      sel.value = '__custom__';
-      const customId = wrapId.replace('Wrap','');
-      document.getElementById(customId).value = value;
-      wrap.classList.add('show');
+    const type = selectId === 'utmSourceSelect' ? 'source' : 'medium';
+    const knownValues = type === 'source'
+      ? ['google','fb','ig','linkedin','mautic','dpg','partner','overig']
+      : ['cpc','paid-social','paid','display','email','social','referral'];
+
+    if (!value) {
+      dropState[type] = '';
+      const triggerId = type === 'source' ? 'cdSourceTrigger' : 'cdMediumTrigger';
+      const labelId = type === 'source' ? 'cdSourceLabel' : 'cdMediumLabel';
+      const menuId = type === 'source' ? 'cdSourceMenu' : 'cdMediumMenu';
+      document.getElementById(labelId).textContent = type === 'source' ? 'Kies een bron…' : 'Kies een type…';
+      document.getElementById(triggerId).classList.add('placeholder');
+      document.querySelectorAll(`#${menuId} .cd-option`).forEach(o => o.classList.remove('selected'));
+      document.getElementById(wrapId).classList.remove('show');
+    } else if (knownValues.includes(value)) {
+      selectOption(type, value);
     } else {
-      sel.value = '';
-      wrap.classList.remove('show');
+      selectOption(type, '__custom__');
+      const inputId = type === 'source' ? 'utmSourceCustom' : 'utmMediumCustom';
+      document.getElementById(inputId).value = value;
     }
   }
 
-  function onSourceChange() {
-    const wrap = document.getElementById('utmSourceCustomWrap');
-    document.getElementById('utmSourceSelect').value === '__custom__'
-      ? wrap.classList.add('show') : wrap.classList.remove('show');
-  }
+  function onSourceChange() {}
+  function onMediumChange() {}
+  function syncDropdowns() {}
 
-  function onMediumChange() {
-    const wrap = document.getElementById('utmMediumCustomWrap');
-    document.getElementById('utmMediumSelect').value === '__custom__'
-      ? wrap.classList.add('show') : wrap.classList.remove('show');
+  function getDropdownValue(type, customId) {
+    const val = dropState[type];
+    if (val === '__custom__') {
+      const raw = document.getElementById(customId).value.trim();
+      return raw.toLowerCase().replace(/\s+/g, '-');
+    }
+    return val || '';
   }
-
-  function syncDropdowns() { /* triggers live output update via updateOutput if called */ }
 
   function getValues() {
     return {
       baseUrl: document.getElementById('baseUrl').value.trim(),
-      utmSource: getDropdownValue('utmSourceSelect', 'utmSourceCustom'),
-      utmMedium: getDropdownValue('utmMediumSelect', 'utmMediumCustom'),
+      utmSource: getDropdownValue('source', 'utmSourceCustom'),
+      utmMedium: getDropdownValue('medium', 'utmMediumCustom'),
       utmCampaign: document.getElementById('utmCampaign').value.trim(),
       utmTerm: document.getElementById('utmTerm').value.trim(),
       utmContent: document.getElementById('utmContent').value.trim(),
@@ -1072,8 +1197,8 @@
   }
 
   function goToStep3() {
-    const src = getDropdownValue('utmSourceSelect', 'utmSourceCustom');
-    const med = getDropdownValue('utmMediumSelect', 'utmMediumCustom');
+    const src = getDropdownValue('source', 'utmSourceCustom');
+    const med = getDropdownValue('medium', 'utmMediumCustom');
     if (!src || !med) { showToast('Kies een bron én type marketing'); return; }
     document.getElementById('done2').innerHTML = `<strong>Bron:</strong> ${esc(src)} &nbsp;·&nbsp; <strong>Type:</strong> ${esc(med)}`;
     document.getElementById('badge2').className = 'step-badge badge-done';
@@ -1239,8 +1364,8 @@
     restartFlow();
     setTimeout(() => {
       document.getElementById('baseUrl').value = item.vals.baseUrl || '';
-      setDropdown('utmSourceSelect', 'utmSourceCustomWrap', item.vals.utmSource);
-      setDropdown('utmMediumSelect', 'utmMediumCustomWrap', item.vals.utmMedium);
+      selectOption('source', item.vals.utmSource);
+      selectOption('medium', item.vals.utmMedium);
       document.getElementById('utmCampaign').value = item.vals.utmCampaign || '';
       document.getElementById('utmTerm').value = item.vals.utmTerm || '';
       document.getElementById('utmContent').value = item.vals.utmContent || '';
@@ -1270,12 +1395,10 @@
 
   function restartFlow() {
     ['baseUrl','utmCampaign','utmTerm','utmContent'].forEach(k => { const el = document.getElementById(k); if(el) el.value = ''; });
-    document.getElementById('utmSourceSelect').value = '';
-    document.getElementById('utmMediumSelect').value = '';
+    setDropdown('utmSourceSelect', 'utmSourceCustomWrap', '');
+    setDropdown('utmMediumSelect', 'utmMediumCustomWrap', '');
     document.getElementById('utmSourceCustom').value = '';
     document.getElementById('utmMediumCustom').value = '';
-    document.getElementById('utmSourceCustomWrap').classList.remove('show');
-    document.getElementById('utmMediumCustomWrap').classList.remove('show');
     ['badge1','badge2','badge3'].forEach((id) => {
       const el = document.getElementById(id);
       el.className = 'step-badge badge-required';
