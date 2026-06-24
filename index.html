@@ -543,6 +543,29 @@
 
     .next-btn svg { width: 14px; height: 14px; }
 
+    .btn-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .prev-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .15s, color .15s, transform .1s;
+    }
+    .prev-btn:hover { border-color: var(--rose); color: var(--rose); }
+    .prev-btn:active { transform: scale(.98); }
+    .prev-btn svg { width: 14px; height: 14px; }
+    .step.done .step-card { cursor: pointer; }
+    .step.done .step-card:hover { border-color: var(--rose); opacity: 1 !important; }
+
     .edit-btn {
       font-size: 12px;
       font-weight: 500;
@@ -726,6 +749,7 @@
     }
 
     .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #dc2626; }
   </style>
 </head>
 <body>
@@ -820,7 +844,7 @@
       <div class="step-num">1</div>
     </div>
     <div class="step-right">
-      <div class="step-card">
+      <div class="step-card" onclick="if(this.closest('.step').classList.contains('done')) goBack(1)">
         <div class="step-card-header">
           <div>
             <div class="step-card-title">Naar welke pagina wil je mensen sturen?</div>
@@ -850,7 +874,7 @@
       <div class="step-num">2</div>
     </div>
     <div class="step-right">
-      <div class="step-card">
+      <div class="step-card" onclick="if(this.closest('.step').classList.contains('done')) goBack(2)">
         <div class="step-card-header">
           <div>
             <div class="step-card-title">Waar komt deze link vandaan?</div>
@@ -886,7 +910,7 @@
             </div>
             <div class="custom-wrap" id="utmSourceCustomWrap">
               <input type="text" id="utmSourceCustom" placeholder="vul eigen bron in" oninput="syncDropdowns()" />
-              <div class="custom-warn">⚠ Wijk alleen af in overleg. Afwijkende bronnen maken Salesforce-rapporten onbetrouwbaar.</div>
+              <div class="custom-warn" id="sourceCustomWarn">⚠ Wijk alleen af in overleg. Afwijkende bronnen maken Salesforce-rapporten onbetrouwbaar.</div>
             </div>
             <div class="field-hint">Kies uit de lijst zodat de data consistent blijft.</div>
           </div>
@@ -915,10 +939,16 @@
             </div>
             <div class="field-hint">Wat voor soort kanaal? Bijv. betaalde advertentie (cpc), e-mail, of social media.</div>
           </div>
-          <button class="next-btn" onclick="goToStep3()">
-            Volgende stap
-            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+          <div class="btn-row">
+            <button class="prev-btn" onclick="goBack(1)">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Vorige
+            </button>
+            <button class="next-btn" onclick="goToStep3()">
+              Volgende stap
+              <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
         </div>
         <div class="done-summary" id="done2"></div>
       </div>
@@ -931,7 +961,7 @@
       <div class="step-num">3</div>
     </div>
     <div class="step-right">
-      <div class="step-card">
+      <div class="step-card" onclick="if(this.closest('.step').classList.contains('done')) goBack(3)">
         <div class="step-card-header">
           <div>
             <div class="step-card-title">Hoe heet je campagne?</div>
@@ -960,10 +990,16 @@
             <div class="field-hint">Handig als je meerdere versies van dezelfde advertentie hebt.</div>
           </div>
 
-          <button class="next-btn" onclick="goToStep4()">
-            Genereer mijn URL
-            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+          <div class="btn-row">
+            <button class="prev-btn" onclick="goBack(2)">
+              <svg viewBox="0 0 14 14" fill="none"><path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Vorige
+            </button>
+            <button class="next-btn" onclick="goToStep4()">
+              Genereer mijn URL
+              <svg viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
         </div>
         <div class="done-summary" id="done3"></div>
       </div>
@@ -1037,7 +1073,7 @@
     { name:'DPG Ads',            vals:{ utmSource:'dpg',        utmMedium:'paid' } },
     { name:'Organisch social',   vals:{ utmSource:'instagram',  utmMedium:'social' } },
     { name:'E-mail Nieuwsbrief', vals:{ utmSource:'mautic',     utmMedium:'email' } },
-    { name:'Referral',           vals:{ utmSource:'partner',    utmMedium:'referral' } },
+    { name:'Referral',           vals:{ utmSource:'',            utmMedium:'referral' } },
     { name:'Nieuwsbrief PV',            vals:{ utmSource:'nieuwsbrief-pv',    utmMedium:'email' } },
   ];
 
@@ -1047,7 +1083,7 @@
   PRESETS.forEach(p => {
     const btn = document.createElement('button');
     btn.className = 'preset-btn';
-    btn.innerHTML = `<div class="preset-dot"></div><div><span class="preset-name">${p.name}</span><span class="preset-vals">${p.vals.utmSource} · ${p.vals.utmMedium}</span></div>`;
+    btn.innerHTML = `<div class="preset-dot"></div><div><span class="preset-name">${p.name}</span><span class="preset-vals">${p.vals.utmMedium === 'referral' ? 'url · referral' : p.vals.utmSource + ' · ' + p.vals.utmMedium}</span></div>`;
     btn.onclick = () => {
       selectOption('source', p.vals.utmSource);
       selectOption('medium', p.vals.utmMedium);
@@ -1115,6 +1151,21 @@
     // Also sync the hidden native select for getValues compatibility
     const selectId = type === 'source' ? 'utmSourceSelect' : 'utmMediumSelect';
     document.getElementById(selectId).value = value;
+
+    // Referral medium → zet source automatisch op vrij invulveld
+    if (type === 'medium') {
+      const sourceCustom = document.getElementById('utmSourceCustom');
+      const sourceWarn = document.getElementById('sourceCustomWarn');
+      if (value === 'referral') {
+        selectOption('source', '__custom__');
+        sourceCustom.placeholder = 'Vul hier url website in';
+        sourceCustom.value = '';
+        sourceWarn.style.display = 'none';
+      } else {
+        sourceCustom.placeholder = 'vul eigen bron in';
+        sourceWarn.style.display = '';
+      }
+    }
   }
 
   function setDropdown(selectId, wrapId, value) {
@@ -1185,10 +1236,15 @@
     currentStep = n;
   }
 
+  function goBack(n) {
+    setStep(n);
+    scrollToStep('step' + n);
+  }
+
   function goToStep2() {
     const url = document.getElementById('baseUrl').value.trim();
-    if (!url) { showToast('Vul eerst een URL in'); document.getElementById('baseUrl').focus(); return; }
-    if (!url.startsWith('http')) { showToast('De URL moet beginnen met https://'); document.getElementById('baseUrl').focus(); return; }
+    if (!url) { showToast('Vul eerst een URL in', 'error'); document.getElementById('baseUrl').focus(); return; }
+    if (!url.startsWith('http')) { showToast('De URL moet beginnen met https://', 'error'); document.getElementById('baseUrl').focus(); return; }
     document.getElementById('done1').innerHTML = `<strong>Pagina:</strong> ${esc(url)}`;
     document.getElementById('badge1').className = 'step-badge badge-done';
     document.getElementById('badge1').textContent = '✓ Klaar';
@@ -1199,7 +1255,7 @@
   function goToStep3() {
     const src = getDropdownValue('source', 'utmSourceCustom');
     const med = getDropdownValue('medium', 'utmMediumCustom');
-    if (!src || !med) { showToast('Kies een bron én type marketing'); return; }
+    if (!src || !med) { showToast('Kies een bron én type marketing', 'error'); return; }
     document.getElementById('done2').innerHTML = `<strong>Bron:</strong> ${esc(src)} &nbsp;·&nbsp; <strong>Type:</strong> ${esc(med)}`;
     document.getElementById('badge2').className = 'step-badge badge-done';
     document.getElementById('badge2').textContent = '✓ Klaar';
@@ -1209,7 +1265,7 @@
 
   function goToStep4() {
     const camp = document.getElementById('utmCampaign').value.trim();
-    if (!camp) { showToast('Vul een campagnenaam in'); document.getElementById('utmCampaign').focus(); return; }
+    if (!camp) { showToast('Vul een campagnenaam in', 'error'); document.getElementById('utmCampaign').focus(); return; }
     const term = document.getElementById('utmTerm').value.trim();
     const content = document.getElementById('utmContent').value.trim();
     let summary = `<strong>Campagne:</strong> ${esc(camp)}`;
@@ -1226,8 +1282,10 @@
 
   function scrollToStep(id) {
     setTimeout(() => {
-      document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
+      const el = document.getElementById(id);
+      const top = el.getBoundingClientRect().top + window.scrollY - 72;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }, 100);
   }
 
   function updateOutput() {
@@ -1409,11 +1467,12 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function showToast(msg) {
+  function showToast(msg, type) {
     const t = document.getElementById('toast');
     t.textContent = msg;
+    t.classList.toggle('error', type === 'error');
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2200);
+    setTimeout(() => t.classList.remove('show', 'error'), 2200);
   }
 
   // Init
